@@ -1,0 +1,717 @@
+{
+  "name": "SEO Blog Engine",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "5d60dedd-4b08-4b1e-a7b7-bfeb87b2c8bc",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "topic",
+              "value": "Designing in Vibe coding"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c33cbcf8-3f91-4d6c-9e2d-eff50f489332",
+      "name": "Set Topic",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        192,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "a1986a00-eb25-463a-8b38-c75a47f2464a",
+      "name": "Wait 1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        656,
+        0
+      ],
+      "webhookId": "b745bd74-eded-4f9f-802e-861ab06f67a1"
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "bb93265a-505d-49a0-a790-47f13a26ae35",
+      "name": "Wait 2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        0
+      ],
+      "webhookId": "138f872b-71bf-41dd-9ad0-580fa2b33010"
+    },
+    {
+      "parameters": {
+        "jsCode": "const topic = $('Set Topic').item.json.topic;\nconst nicheData = JSON.stringify($('Niche Research').item.json);\nconst serpData = JSON.stringify($('SerpAPI - SERP Analysis').item.json);\n\nreturn [{\n  json: {\n    topic: topic,\n    nicheData: nicheData,\n    serpData: serpData\n  }\n}];"
+      },
+      "id": "d1f8ae87-41d1-4414-b717-6a095ee6d8a8",
+      "name": "Prepare Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "d28d9e2b-d319-4365-a121-9b1e63fefbc8",
+      "name": "Wait 3",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        0
+      ],
+      "webhookId": "729a557d-1256-49da-863e-72a8b5ff71b0"
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "seconds"
+      },
+      "id": "37fb74db-198f-4a72-8e79-b588ff987355",
+      "name": "Wait 4",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        592,
+        448
+      ],
+      "webhookId": "8e48e898-e84b-44a8-b0e5-bd4d7497a023"
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "6a9f8ffb-82bd-44af-89ff-ba274a5ec7e1",
+      "name": "Wait 5",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        448
+      ],
+      "webhookId": "9c563f12-cc17-4ac1-9cfa-d48515dfc74f"
+    },
+    {
+      "parameters": {
+        "jsCode": "const topic = $('Set Topic').first().json.topic;\nconst seoText = $('AI - SEO Optimization').first().json.text; \nlet blogPost = $('AI - Editor Checklist').first().json.text;\n\n// HEADER-PRESERVING STRIPPER:\n// This only removes the first line if it is a main Title. \n// It safely ignores all ## and ### headers.\nlet lines = blogPost.split('\\n');\n\n// Check if the very first line is likely a Title (e.g., contains '2026' or 'Guide')\n// You can adjust this 'if' condition if it still misses the title.\nif (lines[0].includes('2026') || lines[0].includes('Guide')) {\n    lines.shift(); // Removes only the first line\n}\n\nblogPost = lines.join('\\n').trim();\n\n// ... (Rest of your extraction logic)\n\nconst extract = (label, text) => {\n  const regex = new RegExp(label + ':\\\\s*(.+)', 'i');\n  const match = text.match(regex);\n  return match ? match[1].trim() : '';\n};\n\nconst seoTitle = extract('SEO_TITLE', seoText);\nconst finalContent = blogPost + '\\n\\n---\\nEDITOR NOTES: Focus Keyword: ' + extract('FOCUS_KEYWORD', seoText);\n\nreturn [{\n  json: {\n    title: seoTitle || topic,\n    content: finalContent, \n    // ... (rest of your object)\n  }\n}];"
+      },
+      "id": "3c2231a9-de89-4afa-b27c-7e13aa27f432",
+      "name": "Format Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        864,
+        208
+      ],
+      "id": "51c5d2b8-f972-45fb-897d-1be87d7cca3d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "64296D6DO0agQFaX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        688
+      ],
+      "id": "4ab5341f-2e4a-4e14-be69-1dc701aedcd4",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "64296D6DO0agQFaX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a world-class SEO strategist.\n\nNiche: {{ $('Set Topic').item.json.topic }}\n\nReal Google search data: {{ JSON.stringify($('Niche Research').item.json) }}\n\nProvide:\n1. NICHE OVERVIEW - what is dominating, what formats are winning, what pain points are unaddressed, what sub-areas are oversaturated, what has ranking opportunity for a newer website\n2. KEYWORD CANDIDATES - exactly 10 keywords with search intent, competition level, ranking opportunity, and reasoning for each\n3. BEST KEYWORD SELECTION - single best keyword with reasoning and 5-8 secondary/LSI keywords\n\nBe specific and brutally honest.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        864,
+        0
+      ],
+      "id": "416f0e38-9abd-4729-9f0d-8379de6157df",
+      "name": "AI - Niche Analysis",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a world-class SEO content strategist.Topic: {{ $('Set Topic').item.json.topic }}Niche Strategy: {{ $('AI - Niche Analysis').item.json.text }}\n**Real SERP Data:** {{ JSON.stringify($('SerpAPI - SERP Analysis').item.json.organic_results) }}Task: Create a detailed content brief that outranks the current top 3 competitors.1. SEO BLUEPRINT: Define the primary keyword and 8 secondary/LSI keywords. List 3 'People Also Ask' questions to be answered in the FAQ.2. COMPETITIVE GAP ANALYSIS: Analyze the provided SERP data. What is the average word count? What is the one thing every competitor is missing? (This is our 'Information Gain' angle).3. THE SKELETON (H1-H3): Provide a high-CTR Meta Title and Description. Provide a full Markdown outline. For each H2, briefly state the 'Goal' of that section.4. NEXATOOLBOX SYNERGY: Suggest 2-3 natural internal linking opportunities to other areas of nexatoolbox.com based on the niche.Constraint: Be brutally specific. Do not use filler language. If a competitor's content is 'thin,' explain exactly how we will provide more depth.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1680,
+        0
+      ],
+      "id": "c864a5e1-5bf8-454f-9513-dd9cba1b3faf",
+      "name": "AI - Content Brief",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an elite, multi-disciplinary SEO Content Strategist, Subject Matter Expert, and a master of authentic human prose. Your task is to write a comprehensive, long-form blog post based on the provided input topic. \n\nBecause the input topics will range from simple non-technical listicles to highly complex technical guides, you must execute the following dynamic adaptation protocol before writing:\n\n[PHASE 1: SUBJECT & INTENT AUDIT]\nAnalyze the input topic to determine:\n1. The Target Audience Complexity (e.g., beginners, students, advanced software developers, corporate executives).\n2. The Technical Depth Requirement (e.g., conceptual overview vs. exact technical configuration).\n3. The Goal (e.g., tutorial, optimization guide, listicle review).\n\n[PHASE 2: THE HUMAN-WRITTEN STYLIZATION PROTOCOL]\nRegardless of whether the topic is highly technical or casual, you must write using a completely natural, human-like style. Adhere to these stylistic parameters:\n1. VARIATION IN SENTENCE STRUCTURE: Mix short, punchy sentences with longer, complex thoughts. Avoid the robotic AI pattern where every sentence is the same length.\n2. BANISH AI CLICHÉS & TRANSIENT PHRASES: Never use generic transition words or overused AI formatting hooks. Completely ban phrases like: \"In today's digital landscape,\" \"Delve deeper,\" \"It's essential to remember,\" \"Furthermore,\" \"Moreover,\" \"In conclusion,\" \"Tapestry,\" \"Beacon,\" or \"Testament.\" \n3. GROUNDED, AUTHENTIC TONE: Speak with authority and lived experience. Use pragmatic, conversational, yet professional phrasing. Write as if you are a real expert explaining a concept to a peer, not a machine regurgitating data.\n4. ACTIVE VOICE: Favor active verbs over passive structures to keep the content engaging and dynamic.\n\n[PHASE 3: CONTENT CONFIGURATION & FORMATTING RULES]\nDynamically adjust your vocabulary, tone, and pacing based on Phase 1 and 2, while adhering to these strict universal structural guardrails:\n\n1. NO CODE BLOCKS OR SCRIPTS: Never output raw markdown coding syntax blocks (such as `python`, `javascript`, or terminal command boxes) UNLESS the input topic explicitly asks for a coding tutorial. If a topic is highly technical, explain the technical architecture, configurations, systems, and advanced methodologies conceptually and deeply using human language, structural lists, and comparison tables—NOT by writing fictional code snippets.\n2. RAW MARKDOWN ONLY: Format the article natively using clean Markdown syntax. Use ## for major section headers and ### for sub-headers. Use bold text (**bold**) to emphasize critical takeaways. Use asterisks (*) for bullet points.\n3. ABSOLUTE START: Do not include any pre-text commentary, prompt analysis, character counting, or conversational introductions (e.g., \"Sure, here is your article:\"). Do not include any pre-text commentary. You are forbidden from writing a main title or a main H1/H2 header at the very beginning of the article. Start your output immediately with the first sentence of the introduction paragraph.\n4. NO META-TEXT: Do not print internal prompting instructions, word counts, or character limits within the text body.\n5. EXHAUSTIVE DEPTH: Avoid surface-level summaries. For each subheading, provide thorough, practical, and highly detailed paragraphs explaining the \"how\" and \"why\".\n6. LOGICAL SEQUENCING: Include an Engaging Introduction, Context-Specific Explanations, Practical Step-by-Step Guidance/Best Practices, Common Pitfalls/Solutions, and an FAQ section at the end.\n\nExecute this strategy flawlessly based on the provided input data.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Target Topic: {{ $('Wait 3').item.json.topic }}\n\nNiche Analysis: {{ $('Wait 3').item.json.nicheData }}\n\nSERP Data: {{ $('Wait 3').item.json.serpData }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        448
+      ],
+      "id": "f304c784-55c5-48d7-bcca-2ab2101fc39c",
+      "name": "AI - Write Blog Post",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an elite, senior Human Copyeditor and Content Refiner. Your job is to take the rough draft provided in the input, perform a strict quality-control audit, and completely rewrite it into a flawless, human-grade final article.\n\n[PHASE 1: THE CRITICAL EDITORIAL AUDIT]\nBefore writing, scan the input text for these specific machine errors:\n1. ROBOTIC PATTERNS & CLICHÉS: Eliminate predictable phrasing, identical sentence lengths, and banned words like \"tapestry,\" \"delve,\" \"moreover,\" \"furthermore,\" \"in conclusion,\" or \"in today's digital landscape.\"\n2. HALLUCINATIONS: Completely strip out any fake features, non-existent software capabilities, or hallucinated coding/script syntax blocks (unless the topic explicitly demands a programming guide).\n3. FLOW AND DEPTH: Ensure transitions between paragraphs feel organic, conversational, and deeply insightful.\n\n[PHASE 2: THE REWRITE & REFINEMENT]\n\nMANDATORY FORMATTING: You must retain all ## and ### headers from the input. Do not strip, summarize, or rewrite the headers into plain text. The structure of the headers is non-negotiable.\n\nTITLE ELIMINATION: You are strictly forbidden from including an H1 title or any header at the very start of the output. Start the response immediately with the first paragraph of the introduction.\n\nPROSE STYLE: Maintain the depth, but fix the flow. If a subheading exists in the input, it must exist in your output.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "={{ $('AI - Write Blog Post').item.json.text }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1392,
+        448
+      ],
+      "id": "fb02d39d-a2c6-4c3c-b7b8-0066d4a3132b",
+      "name": "AI - Editor Checklist",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=[START OF PROVIDED CONTENT]\n{{ $('AI - Write Blog Post').item.json.text }}\n[END OF PROVIDED CONTENT]\n\n[INSTRUCTION]\nYou are an elite Search Engine Architect, Semantic SEO Specialist, and User Intent Analyst.\nAnalyze the content above to perform a deep SEO audit.\n\n[PHASE 1: THE SEARCH ARCHITECTURE AUDIT]\n(Keep your existing text from your prompt here, just keep the instructions)\n\n[PHASE 2: RIGID SYSTEM PARSING RULES]\n(Keep your existing text here)\n\n[PHASE 3: FIELD DEFINITIONS & COMPLIANCE METRICS]\n(Keep your existing text here)\n\n[EXECUTE RAW SYNTAX GENERATION USING THIS EXACT FORMAT]:\nSEO_TITLE: [text]\nMETA_DESCRIPTION: [text]\nSLUG: [text]\nFOCUS_KEYWORD: [text]\nTAGS: [text, text, text, text, text]\nCATEGORY: [text]\nIMAGE_ALT_1: [text]\nIMAGE_ALT_2: [text]\nIMAGE_ALT_3: [text]\nSCHEMA_TYPE: [text]",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        848,
+        448
+      ],
+      "id": "16808ef5-e578-41d1-aa36-77273c4517d7",
+      "name": "AI - SEO Optimization",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.topic }}"
+            },
+            {
+              "name": "engine",
+              "value": "google"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0a33e120-fe51-4b70-843c-bc3853c4f2e7",
+      "name": "Niche Research",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        432,
+        0
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "GZDwIOv3zTvjm8xL",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $('Set Topic').item.json.topic }}"
+            },
+            {
+              "name": "engine",
+              "value": "google"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cef43081-3afa-42b4-b36a-c63ea200aa60",
+      "name": "SerpAPI - SERP Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        0
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "GZDwIOv3zTvjm8xL",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        688
+      ],
+      "id": "37f085ff-301c-409f-a4a6-4265999f9c66",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "xbjZkirfzkW7fdGx",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        240
+      ],
+      "id": "2e03f391-e03a-4e94-ba11-2fdf6a4a75a6",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "xbjZkirfzkW7fdGx",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3-32b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        848,
+        704
+      ],
+      "id": "bd090a21-e7cf-4d66-b8cf-b54924204804",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "xbjZkirfzkW7fdGx",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://nexatoolbox.com/wp-json/wp/v2/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $('Format Data').item.json.title }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.html_content }}"
+            },
+            {
+              "name": "status",
+              "value": "draft"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2272,
+        448
+      ],
+      "id": "a71d0fba-9bd2-4ecc-9056-8812d2cfbd2d",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "HZTk2mE4bOqxdqEz",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $('AI - Editor Checklist').item.json.text }}",
+        "destinationKey": "html_content",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        448
+      ],
+      "id": "51368c9a-8417-4a4c-81da-dc4e15f71b1c",
+      "name": "Markdown"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Topic": {
+      "main": [
+        [
+          {
+            "node": "Niche Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1": {
+      "main": [
+        [
+          {
+            "node": "AI - Niche Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2": {
+      "main": [
+        [
+          {
+            "node": "AI - Content Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Data": {
+      "main": [
+        [
+          {
+            "node": "Wait 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3": {
+      "main": [
+        [
+          {
+            "node": "AI - Write Blog Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 4": {
+      "main": [
+        [
+          {
+            "node": "AI - SEO Optimization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5": {
+      "main": [
+        [
+          {
+            "node": "AI - Editor Checklist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI - Niche Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI - Write Blog Post",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Niche Analysis": {
+      "main": [
+        [
+          {
+            "node": "SerpAPI - SERP Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Content Brief": {
+      "main": [
+        [
+          {
+            "node": "Prepare Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Write Blog Post": {
+      "main": [
+        [
+          {
+            "node": "Wait 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - Editor Checklist": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI - SEO Optimization": {
+      "main": [
+        [
+          {
+            "node": "Wait 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Niche Research": {
+      "main": [
+        [
+          {
+            "node": "Wait 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI - SERP Analysis": {
+      "main": [
+        [
+          {
+            "node": "Wait 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI - Editor Checklist",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI - Content Brief",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI - SEO Optimization",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
